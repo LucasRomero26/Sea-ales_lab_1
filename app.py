@@ -844,7 +844,7 @@ def pagina1():
     st.title("Transformación de Señales")
     st.markdown("Este laboratorio está diseñado para aplicar de manera práctica los conceptos teóricos adquiridos en el curso de Señales y Sistemas. Aquí, tendrás la oportunidad de realizar operaciones básicas de transformación de señales y visualizar los resultados en un entorno gráfico computacional.")
     st.markdown("Para comenzar a utlizar la app dirigete al sidebar en la parte derecha y presiona el selecbox debajo de Funciones de la APP. Alli podras seleccionar con que tipo de señal quieres trabajar, asi como también poder regresar a esta pestaña.")
-    st.image("kuromi.png",width=300,)
+    # st.image("kuromi.png",width=300,)
     # Centrar la imagen con HTML y CSS
     st.markdown(
         """
