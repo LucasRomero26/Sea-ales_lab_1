@@ -1296,18 +1296,64 @@ def pagina3():
                 st.markdown("")
                 seleccion_valores_no= st.selectbox("Seleccione un valor de [no]",("-1","-2","-3","-4","-5","-6","1","2","3","4","5","6"),index=None,placeholder="Seleccione una opción",)
             if (seleccion_valores_M  != None) and (seleccion_valores_no != None):
+                M = eval(seleccion_valores_M)
+                no = float(seleccion_valores_no)
                 st.write("")
-                tipo_interpolación = st.selectbox("Escoja forma de Interpolación",("Lineal","Escalon","Ceros"),index=None,placeholder="Seleccione una opción",)
-                if tipo_interpolación != None:
+                if abs(M) < 1:
+                    tipo_interpolación = st.selectbox("Escoja forma de Interpolación",("Lineal","Escalon","Ceros"),index=None,placeholder="Seleccione una opción",)
                     M = eval(seleccion_valores_M)
                     no = float(seleccion_valores_no)
-                    if tipo_interpolación == "Lineal":
-                        interpolacion = 3
-                    elif tipo_interpolación == "Escalon":
-                        interpolacion = 2
-                    else:
-                        interpolacion = 1
+                    if tipo_interpolación != None:
+                        if tipo_interpolación == "Lineal":
+                            interpolacion = 3
+                        elif tipo_interpolación == "Escalon":
+                            interpolacion = 2
+                        else:
+                            interpolacion = 1
+                            
+                        n_tras, x_tras = Trasform_DesEsc(n_C,x_Cn,M,no, Inter_P = interpolacion ,Grafic=False) #Grafica Final
+                        n2_tras, x2_tras = Trasform_DesEsc(n_C,x_Cn,1,no, Inter_P = interpolacion ,Grafic=False) #Grafica desplazada
+
+                        #Grafica Original
+                        figd31 ,axd31 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd31.stem(n_C,x_Cn, basefmt=" ")
+                        figd31.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd31.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Gráfica Original')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd31)
                         
+                        #Grafica desplazada
+                        figd31 ,axd31 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd31.stem(n2_tras, x2_tras, basefmt=" ")
+                        figd31.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd31.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Paso 1 (Desplazamiento)')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd31)
+
+                        #Grafica Final
+                        figd3 ,axd3 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd3.stem(n_tras, x_tras, basefmt=" ")
+                        figd3.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd3.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Paso 2 (Escalamiento)')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd3)
+                else:
+                    interpolacion = 1
                     n_tras, x_tras = Trasform_DesEsc(n_C,x_Cn,M,no, Inter_P = interpolacion ,Grafic=False) #Grafica Final
                     n2_tras, x2_tras = Trasform_DesEsc(n_C,x_Cn,1,no, Inter_P = interpolacion ,Grafic=False) #Grafica desplazada
 
@@ -1323,7 +1369,7 @@ def pagina3():
                     # Mostrar la gráfica
                     plt.grid(True,linestyle=":")
                     st.pyplot(figd31)
-                    
+                        
                     #Grafica desplazada
                     figd31 ,axd31 = plt.subplots()
                     plt.style.use("dark_background")
@@ -1349,6 +1395,7 @@ def pagina3():
                     # Mostrar la gráfica
                     plt.grid(True,linestyle=":")
                     st.pyplot(figd3)
+                        
             else:
                 st.write("No se han completado los campos")
 
@@ -1362,66 +1409,116 @@ def pagina3():
             with col2:
                 st.markdown("")
                 seleccion_valores_no1 = st.selectbox("Seleccione un valor de [no]",("-1","-2","-3","-4","-5","-6","1","2","3","4","5","6"),index=None,placeholder="Seleccione una opción",)
-            m1 = eval(seleccion_valores_M1)
-            no1 = float(seleccion_valores_no1)
+            if seleccion_valores_M1 == None or seleccion_valores_no1==None:
+                m1 = 1
+                no1 = 0
+            else:
+                m1 = eval(seleccion_valores_M1)
+                no1 = float(seleccion_valores_no1)
             n_Cinicio=-5
             n_Cfin=16
 
             n_C=np.arange(n_Cinicio,n_Cfin+1)                                                # Vector de los valores de muestra n de la señal c)
             x_Cn=[0,0,0,0,0,-3,0,5,4,-2,-4,-1,2,5,7,4,-2,0,0,0,0,0]
             if ((no1/(float(m1))) % 1) == 0:
-                interpolacion = st.selectbox("Seleccione Método de Interpolación",("Lineal","Escalon","Ceros"),index=None,placeholder="Seleccione una opción")
-                if interpolacion == "Lineal":
-                   valor_interpolacion = 3
-                elif interpolacion == "Escalon":
-                   valor_interpolacion = 2
-                elif interpolacion == "Ceros":
-                   valor_interpolacion = 1
-                else:
-                   valor_interpolacion = None
-                if valor_interpolacion != None:
-                    n_des,x_des = Trasform_EscDes(n_C,x_Cn,m1,no1,Inter_P=valor_interpolacion,Grafic=False)
+                if (no1 != 0) and (m1 != 1):
+                    if abs(m1) < 1:
+                        interpolacion = st.selectbox("Seleccione Método de Interpolación",("Lineal","Escalon","Ceros"),index=None,placeholder="Seleccione una opción")
+                        if interpolacion == "Lineal":
+                            valor_interpolacion = 3
+                        elif interpolacion == "Escalon":
+                            valor_interpolacion = 2
+                        elif interpolacion == "Ceros":
+                            valor_interpolacion = 1
+                        else:
+                            valor_interpolacion = None
+                        if valor_interpolacion != None:
+                            n_des,x_des = Trasform_EscDes(n_C,x_Cn,m1,no1,Inter_P=valor_interpolacion,Grafic=False)
 
-                    n_esc,x_esc = Trasform_EscDes(n_C,x_Cn,m1,0,Inter_P=valor_interpolacion,Grafic=False)
+                            n_esc,x_esc = Trasform_EscDes(n_C,x_Cn,m1,0,Inter_P=valor_interpolacion,Grafic=False)
 
-                    #Original
-                    figd3 ,axd3 = plt.subplots()
-                    plt.style.use("dark_background")
-                    axd3.stem(n_C, x_Cn, basefmt=" ")
-                    figd3.patch.set_alpha(0.0)  # Fondo de la figura
-                    axd3.patch.set_alpha(0.0)   # Fondo del área de los ejes
-                    plt.xlabel('Tiempo s')
-                    plt.ylabel('Amplitud')
-                    plt.title('Señal Original')
-                    # Mostrar la gráfica
-                    plt.grid(True,linestyle=":")
-                    st.pyplot(figd3)
+                            #Original
+                            figd3 ,axd3 = plt.subplots()
+                            plt.style.use("dark_background")
+                            axd3.stem(n_C, x_Cn, basefmt=" ")
+                            figd3.patch.set_alpha(0.0)  # Fondo de la figura
+                            axd3.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                            plt.xlabel('Tiempo s')
+                            plt.ylabel('Amplitud')
+                            plt.title('Señal Original')
+                            # Mostrar la gráfica
+                            plt.grid(True,linestyle=":")
+                            st.pyplot(figd3)
 
-                    #Escalada
-                    figd4 ,axd4 = plt.subplots()
-                    plt.style.use("dark_background")
-                    axd4.stem(n_esc, x_esc, basefmt=" ")
-                    figd4.patch.set_alpha(0.0)  # Fondo de la figura
-                    axd4.patch.set_alpha(0.0)   # Fondo del área de los ejes
-                    plt.xlabel('Tiempo s')
-                    plt.ylabel('Amplitud')
-                    plt.title('Paso 1 (Señal Escalada)')
-                    # Mostrar la gráfica
-                    plt.grid(True,linestyle=":")
-                    st.pyplot(figd4)
+                            #Escalada
+                            figd4 ,axd4 = plt.subplots()
+                            plt.style.use("dark_background")
+                            axd4.stem(n_esc, x_esc, basefmt=" ")
+                            figd4.patch.set_alpha(0.0)  # Fondo de la figura
+                            axd4.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                            plt.xlabel('Tiempo s')
+                            plt.ylabel('Amplitud')
+                            plt.title('Paso 1 (Señal Escalada)')
+                            # Mostrar la gráfica
+                            plt.grid(True,linestyle=":")
+                            st.pyplot(figd4)
 
-                    #Desplazada
-                    figd5 ,axd5 = plt.subplots()
-                    plt.style.use("dark_background")
-                    axd5.stem(n_des, x_des, basefmt=" ")
-                    figd5.patch.set_alpha(0.0)  # Fondo de la figura
-                    axd5.patch.set_alpha(0.0)   # Fondo del área de los ejes
-                    plt.xlabel('Tiempo s')
-                    plt.ylabel('Amplitud')
-                    plt.title('Paso 2 (Señal Desplazada)')
-                    # Mostrar la gráfica
-                    plt.grid(True,linestyle=":")
-                    st.pyplot(figd5)
+                            #Desplazada
+                            figd5 ,axd5 = plt.subplots()
+                            plt.style.use("dark_background")
+                            axd5.stem(n_des, x_des, basefmt=" ")
+                            figd5.patch.set_alpha(0.0)  # Fondo de la figura
+                            axd5.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                            plt.xlabel('Tiempo s')
+                            plt.ylabel('Amplitud')
+                            plt.title('Paso 2 (Señal Desplazada)')
+                            # Mostrar la gráfica
+                            plt.grid(True,linestyle=":")
+                            st.pyplot(figd5)
+                    else:
+                        valor_interpolacion = 1
+                        n_des,x_des = Trasform_EscDes(n_C,x_Cn,m1,no1,Inter_P=valor_interpolacion,Grafic=False)
+
+                        n_esc,x_esc = Trasform_EscDes(n_C,x_Cn,m1,0,Inter_P=valor_interpolacion,Grafic=False)
+
+                        #Original
+                        figd3 ,axd3 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd3.stem(n_C, x_Cn, basefmt=" ")
+                        figd3.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd3.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Señal Original')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd3)
+
+                        #Escalada
+                        figd4 ,axd4 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd4.stem(n_esc, x_esc, basefmt=" ")
+                        figd4.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd4.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Paso 1 (Señal Escalada)')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd4)
+
+                        #Desplazada
+                        figd5 ,axd5 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd5.stem(n_des, x_des, basefmt=" ")
+                        figd5.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd5.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Paso 2 (Señal Desplazada)')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd5)            
             else:
                st.write(r''' No se puede realizar dado que $N_o$ no es un número entero.''')
 
@@ -1468,26 +1565,72 @@ def pagina3():
                 st.markdown("")
                 seleccion_valores_no2= st.selectbox("Seleccione un valor de [no]",("-1","-2","-3","-4","-5","-6","1","2","3","4","5","6"),index=None,placeholder="Seleccione una opción",)
             
-            if (seleccion_valores_M2 != None) and (seleccion_valores_no2 != None):
+            if (seleccion_valores_M  != None) and (seleccion_valores_no != None):
+                M = eval(seleccion_valores_M)
+                no = float(seleccion_valores_no)
                 st.write("")
-                tipo_interpolación = st.selectbox("Escoja forma de Interpolación",("Lineal","Escalon","Ceros"),index=None,placeholder="Seleccione una opción",)
-                if tipo_interpolación != None:
-                    M = eval(seleccion_valores_M2)
-                    no = float(seleccion_valores_no2)
-                    if tipo_interpolación == "Lineal":
-                        interpolacion = 3
-                    elif tipo_interpolación == "Escalon":
-                        interpolacion = 2
-                    else:
-                        interpolacion = 1
+                if abs(M) < 1:
+                    tipo_interpolación = st.selectbox("Escoja forma de Interpolación",("Lineal","Escalon","Ceros"),index=None,placeholder="Seleccione una opción",)
+                    M = eval(seleccion_valores_M)
+                    no = float(seleccion_valores_no)
+                    if tipo_interpolación != None:
+                        if tipo_interpolación == "Lineal":
+                            interpolacion = 3
+                        elif tipo_interpolación == "Escalon":
+                            interpolacion = 2
+                        else:
+                            interpolacion = 1
+                            
+                        n_tras, x_tras = Trasform_DesEsc(n_C,x_Cn,M,no, Inter_P = interpolacion ,Grafic=False) #Grafica Final
+                        n2_tras, x2_tras = Trasform_DesEsc(n_C,x_Cn,1,no, Inter_P = interpolacion ,Grafic=False) #Grafica desplazada
+
+                        #Grafica Original
+                        figd31 ,axd31 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd31.stem(n_C,x_Cn, basefmt=" ")
+                        figd31.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd31.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Gráfica Original')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd31)
                         
-                    n_tras, x_tras = Trasform_DesEsc(n_D,x_Dn,M,no, Inter_P = interpolacion ,Grafic=False) #Grafica Final
-                    n2_tras, x2_tras = Trasform_DesEsc(n_D,x_Dn,1,no, Inter_P = interpolacion ,Grafic=False) #Grafica desplazada
+                        #Grafica desplazada
+                        figd31 ,axd31 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd31.stem(n2_tras, x2_tras, basefmt=" ")
+                        figd31.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd31.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Paso 1 (Desplazamiento)')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd31)
+
+                        #Grafica Final
+                        figd3 ,axd3 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd3.stem(n_tras, x_tras, basefmt=" ")
+                        figd3.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd3.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Paso 2 (Escalamiento)')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd3)
+                else:
+                    interpolacion = 1
+                    n_tras, x_tras = Trasform_DesEsc(n_C,x_Cn,M,no, Inter_P = interpolacion ,Grafic=False) #Grafica Final
+                    n2_tras, x2_tras = Trasform_DesEsc(n_C,x_Cn,1,no, Inter_P = interpolacion ,Grafic=False) #Grafica desplazada
 
                     #Grafica Original
                     figd31 ,axd31 = plt.subplots()
                     plt.style.use("dark_background")
-                    axd31.stem(n_D,x_Dn, basefmt=" ")
+                    axd31.stem(n_C,x_Cn, basefmt=" ")
                     figd31.patch.set_alpha(0.0)  # Fondo de la figura
                     axd31.patch.set_alpha(0.0)   # Fondo del área de los ejes
                     plt.xlabel('Tiempo s')
@@ -1496,7 +1639,7 @@ def pagina3():
                     # Mostrar la gráfica
                     plt.grid(True,linestyle=":")
                     st.pyplot(figd31)
-                    
+                        
                     #Grafica desplazada
                     figd31 ,axd31 = plt.subplots()
                     plt.style.use("dark_background")
@@ -1535,8 +1678,13 @@ def pagina3():
             with col2:
                 st.markdown("")
                 seleccion_valores_no13 = st.selectbox("Seleccione un valor de [no]",("-1","-2","-3","-4","-5","-6","1","2","3","4","5","6"),index=None,placeholder="Seleccione una opción",)
-            m1 = eval(seleccion_valores_M13)
-            no1 = float(seleccion_valores_no13)
+            if seleccion_valores_M13 == None or seleccion_valores_no13==None:
+                m1 = 1
+                no1 = 0
+            else:
+                m1 = eval(seleccion_valores_M13)
+                no1 = float(seleccion_valores_no13)
+               
             n_Dinicio=-10
             n_Dfin=10
 
@@ -1548,60 +1696,107 @@ def pagina3():
             x_DnC=np.power((8/5),np.arange(1,6))
             x_DnD=np.zeros(5)
 
-            x_Dn=np.concatenate((x_DnA,x_DnB,x_DnC,x_DnD)) 
+            x_Dn=np.concatenate((x_DnA,x_DnB,x_DnC,x_DnD))
+
             if ((no1/(float(m1))) % 1) == 0:
-                interpolacion = st.selectbox("Seleccione Método de Interpolación",("Lineal","Escalon","Ceros"),index=None,placeholder="Seleccione una opción")
-                if interpolacion == "Lineal":
-                   valor_interpolacion = 3
-                elif interpolacion == "Escalon":
-                   valor_interpolacion = 2
-                elif interpolacion == "Ceros":
-                   valor_interpolacion = 1
-                else:
-                   valor_interpolacion = None
-                if valor_interpolacion != None:
-                    n_des,x_des = Trasform_EscDes(n_D,x_Dn,m1,no1,Inter_P=valor_interpolacion,Grafic=False)
+                if (no1 != 0) and (m1 != 1):
+                    if abs(m1) < 1:
+                        interpolacion = st.selectbox("Seleccione Método de Interpolación",("Lineal","Escalon","Ceros"),index=None,placeholder="Seleccione una opción")
+                        if interpolacion == "Lineal":
+                            valor_interpolacion = 3
+                        elif interpolacion == "Escalon":
+                            valor_interpolacion = 2
+                        elif interpolacion == "Ceros":
+                            valor_interpolacion = 1
+                        else:
+                            valor_interpolacion = None
+                        if valor_interpolacion != None:
+                            n_des,x_des = Trasform_EscDes(n_D,x_Dn,m1,no1,Inter_P=valor_interpolacion,Grafic=False)
 
-                    n_esc,x_esc = Trasform_EscDes(n_D,x_Dn,m1,0,Inter_P=valor_interpolacion,Grafic=False)
+                            n_esc,x_esc = Trasform_EscDes(n_D,x_Dn,m1,0,Inter_P=valor_interpolacion,Grafic=False)
 
-                    #Original
-                    figd3 ,axd3 = plt.subplots()
-                    plt.style.use("dark_background")
-                    axd3.stem(n_D, x_Dn, basefmt=" ")
-                    figd3.patch.set_alpha(0.0)  # Fondo de la figura
-                    axd3.patch.set_alpha(0.0)   # Fondo del área de los ejes
-                    plt.xlabel('Tiempo s')
-                    plt.ylabel('Amplitud')
-                    plt.title('Señal Original')
-                    # Mostrar la gráfica
-                    plt.grid(True,linestyle=":")
-                    st.pyplot(figd3)
+                            #Original
+                            figd3 ,axd3 = plt.subplots()
+                            plt.style.use("dark_background")
+                            axd3.stem(n_D, x_Dn, basefmt=" ")
+                            figd3.patch.set_alpha(0.0)  # Fondo de la figura
+                            axd3.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                            plt.xlabel('Tiempo s')
+                            plt.ylabel('Amplitud')
+                            plt.title('Señal Original')
+                            # Mostrar la gráfica
+                            plt.grid(True,linestyle=":")
+                            st.pyplot(figd3)
 
-                    #Escalada
-                    figd4 ,axd4 = plt.subplots()
-                    plt.style.use("dark_background")
-                    axd4.stem(n_esc, x_esc, basefmt=" ")
-                    figd4.patch.set_alpha(0.0)  # Fondo de la figura
-                    axd4.patch.set_alpha(0.0)   # Fondo del área de los ejes
-                    plt.xlabel('Tiempo s')
-                    plt.ylabel('Amplitud')
-                    plt.title('Paso 1 (Señal Escalada)')
-                    # Mostrar la gráfica
-                    plt.grid(True,linestyle=":")
-                    st.pyplot(figd4)
+                            #Escalada
+                            figd4 ,axd4 = plt.subplots()
+                            plt.style.use("dark_background")
+                            axd4.stem(n_esc, x_esc, basefmt=" ")
+                            figd4.patch.set_alpha(0.0)  # Fondo de la figura
+                            axd4.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                            plt.xlabel('Tiempo s')
+                            plt.ylabel('Amplitud')
+                            plt.title('Paso 1 (Señal Escalada)')
+                            # Mostrar la gráfica
+                            plt.grid(True,linestyle=":")
+                            st.pyplot(figd4)
 
-                    #Desplazada
-                    figd5 ,axd5 = plt.subplots()
-                    plt.style.use("dark_background")
-                    axd5.stem(n_des, x_des, basefmt=" ")
-                    figd5.patch.set_alpha(0.0)  # Fondo de la figura
-                    axd5.patch.set_alpha(0.0)   # Fondo del área de los ejes
-                    plt.xlabel('Tiempo s')
-                    plt.ylabel('Amplitud')
-                    plt.title('Paso 2 (Señal Desplazada)')
-                    # Mostrar la gráfica
-                    plt.grid(True,linestyle=":")
-                    st.pyplot(figd5)
+                            #Desplazada
+                            figd5 ,axd5 = plt.subplots()
+                            plt.style.use("dark_background")
+                            axd5.stem(n_des, x_des, basefmt=" ")
+                            figd5.patch.set_alpha(0.0)  # Fondo de la figura
+                            axd5.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                            plt.xlabel('Tiempo s')
+                            plt.ylabel('Amplitud')
+                            plt.title('Paso 2 (Señal Desplazada)')
+                            # Mostrar la gráfica
+                            plt.grid(True,linestyle=":")
+                            st.pyplot(figd5)
+                    else:
+                        valor_interpolacion = 1
+                        n_des,x_des = Trasform_EscDes(n_D,x_Dn,m1,no1,Inter_P=valor_interpolacion,Grafic=False)
+
+                        n_esc,x_esc = Trasform_EscDes(n_D,x_Dn,m1,0,Inter_P=valor_interpolacion,Grafic=False)
+
+                        #Original
+                        figd3 ,axd3 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd3.stem(n_D, x_Dn, basefmt=" ")
+                        figd3.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd3.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Señal Original')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd3)
+
+                        #Escalada
+                        figd4 ,axd4 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd4.stem(n_esc, x_esc, basefmt=" ")
+                        figd4.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd4.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Paso 1 (Señal Escalada)')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd4)
+
+                        #Desplazada
+                        figd5 ,axd5 = plt.subplots()
+                        plt.style.use("dark_background")
+                        axd5.stem(n_des, x_des, basefmt=" ")
+                        figd5.patch.set_alpha(0.0)  # Fondo de la figura
+                        axd5.patch.set_alpha(0.0)   # Fondo del área de los ejes
+                        plt.xlabel('Tiempo s')
+                        plt.ylabel('Amplitud')
+                        plt.title('Paso 2 (Señal Desplazada)')
+                        # Mostrar la gráfica
+                        plt.grid(True,linestyle=":")
+                        st.pyplot(figd5)            
             else:
                st.write(r''' No se puede realizar dado que $N_o$ no es un número entero.''')
 
