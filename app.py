@@ -1433,8 +1433,198 @@ def pagina3():
                         else:
                             valor_interpolacion = None
                         if valor_interpolacion != None:
-                            n_des,x_des = Trasform_EscDes(n_C,x_Cn,m1,no1,Inter_P=valor_interpolacion,Grafic=False)
+                            # ---------------------------------------------------------------Funcion encargada de la graficación--------------------------------------
+                            def Graf_EscDes(n,x_n,n_des,n_esc,n_desI,x_nesc,Valor_des,Valor_esc,inv,Inter_P):
 
+                                def limites():
+
+                                    x_min=np.min(x_n)                                                           # Ya que la funcion np.max y np.min no son buenas comparando numeros enteros. Se debe extraer primero
+                                    x_max=np.max(x_n)                                                           # Todos los minimos y maximos.
+                                    n_min=np.min(n)
+                                    n_max=np.max(n)
+                                    n_des_min=np.min(n_des)
+                                    n_des_max=np.max(n_des)
+                                    n_esc_min=np.min(n_esc)
+                                    n_esc_max=np.max(n_esc)
+                                    n_desI_min=np.min(n_desI)
+                                    n_desI_max=np.max(n_desI)
+
+                                    y_min=min(n_min,n_des_min,n_esc_min,n_desI_min)                             # Todos limites derechos y izquierdos se comparan y se conservan los de mayor magnitud.
+                                    y_max=max(n_max,n_des_max,n_esc_max,n_desI_max)
+
+                                    plt.axis([y_min-2,y_max+2,x_min-2,x_max+2])
+
+
+                                if (Valor_des<0):
+                                    sig_lable='-'
+                                else:
+                                    sig_lable='+'
+
+                                if (np.abs(Valor_esc)>1):
+
+                                    tipo_lable=' '
+                                else:
+
+                                    if (Inter_P==1):
+                                            tipo_lable='(Interpolacion Cero)'
+                                    elif (Inter_P==2):
+                                            tipo_lable='(Interpolacion Escalón)'
+                                    elif (Inter_P==3):
+                                            tipo_lable='(Interpolacion Lineal)'
+
+                                #-----------------------------------Dimenciones de la Graficas----------------------------------------
+
+                                if (inv==False):
+                                    plt.figure(figsize=(15,5))
+                                else:
+                                    plt.figure(figsize=(15,12))
+
+                                if (inv==False):
+                                    plt.subplot(1,3,1)
+                                else:
+                                    plt.subplot(2,2,1)
+
+                                #---------------------------------------Grafica señal Original-------------------------------------
+
+                                plt.stem(n,x_n,basefmt=" ", label=f'$x[n]$')
+                                plt.title("Señal Discreta")
+                                plt.xlabel("Tiempo (s)")
+                                plt.ylabel("Amplitud")
+                                limites()
+                                plt.grid(True)
+                                plt.legend()
+
+                                #---------------------------------------Grafica señal Escalada-------------------------------------
+
+                                if (inv==False):
+                                    plt.subplot(1,3,2)
+                                else:
+                                    plt.subplot(2,2,2)
+
+                                plt.stem(n_esc,x_nesc,linefmt='r', basefmt=" ", label=f'$x[{np.abs(Valor_esc)}n]$')
+                                plt.title(f'Señal Discreta Escalada {tipo_lable}')
+                                plt.xlabel("Tiempo (s)")
+                                plt.ylabel("Amplitud")
+                                limites()
+                                plt.grid(True)
+                                plt.legend()
+
+                                #---------------------------------------Grafica señal Desplazada-------------------------------------
+
+                                if (inv==False):
+                                    plt.subplot(1,3,3)
+                                else:
+                                    plt.subplot(2,2,3)
+
+                                plt.stem(n_des,x_nesc,linefmt='g', basefmt=" ", label=f'$x[{np.abs(Valor_esc)}n{sig_lable}{np.abs(Valor_des)}]$')
+                                plt.title("Señal Discreta Desplazada")
+                                plt.xlabel("Tiempo (s)")
+                                plt.ylabel("Amplitud")
+                                limites()
+                                plt.grid(True)
+                                plt.legend()
+
+                            #---------------------------------------Grafica señal Reflejada-------------------------------------
+
+                                if (inv==True):
+
+                                    plt.subplot(2,2,4)
+                                    plt.stem(n_desI,x_nesc,linefmt='g', basefmt=" ", label=f'$x[{Valor_esc}n{sig_lable}{np.abs(Valor_des)}]$')
+                                    plt.title("Señal Discreta Reflejada")
+                                    plt.xlabel("Tiempo (s)")
+                                    plt.ylabel("Amplitud")
+                                    limites()
+                                    plt.grid(True)
+                                    plt.legend()
+
+                            #---------------------------------------------------------------Funcion encargada de la interpolacion Lineal-------------------------------
+
+                            def interpolacion_lineal(n1, x_n1, n2, x_n2, n):
+
+                                # Fórmula de interpolación lineal
+                                sol = x_n1 + (x_n2 - x_n1) * (n - n1) / (n2 - n1)
+                                return sol
+
+                            #---------------------------------------------------------------Funcion de Traformacion Metodo 1---------------------------------------------------
+
+                            def Trasform_EscDes(n,x_n,Valor_esc,Valor_des,Inter_P=1,Grafic=True,Lock=True):
+
+                            #----------------------------------------------Escalado---------------------------------------------------#
+
+                                if (np.abs(Valor_esc)>1):
+
+                                    n_esc = np.array([x // (np.abs(Valor_esc)) for x in n if x % np.abs(Valor_esc) == 0])          # Se crea el vector de n escalado. Se aplica la division entera del valor abs de a
+                                                                                                                                    # factor de escalado para cada dato de el vector de n, pero solo se guardan
+                                                                                                                                # los resultados enteros.
+
+                                    x_nesc = np.array([x_n[np.digitize(np.abs(Valor_esc)*i, n) - 1] for i in n_esc])          # Se arma el vector de amplitudes diezmado. Primero se toma cada valor de n escalado y se regresa
+                                                                                                                        # a su valor original. Luego se busca el indice de ese valor en el vector n sin escalar
+                                                                                                                        # Para esto se usa la funcion digitize (). Como las dimeciones de n y X[n] son las misma,
+                                                                                                                        # basta con este indice para extraer el valor de x[n] correspondiente.
+                                else:
+
+                                    Z=int(1/np.abs(Valor_esc))                                                               # El factor que se multiplica cada valor de tiempo es 1/M.
+                                    n_esc=np.arange(np.min(n)*Z,np.max(n)*Z+1,dtype=int)                                     # Se escala el vector n.
+                                    L_n=len(n)                                                                               # Longitud del vector n.
+                                    L_nesc=len(n_esc)                                                                        # Longitud del vector n escalado.
+
+                                    x_nesc = np.arange(1,L_nesc+1,dtype=float)                                               # Se crea un vector para las amplitudes de la señal escalada.
+
+                                for k in range(L_nesc):                                                                  # Se analiza los indeces del vector n escalado.
+
+                                    if (k / Z).is_integer():                                                               # Si la señal se expandio un factor de Z entonces los indices multiplos de Z seran los
+                                                                                                                            # indices de las Muestras expandidas. Sino entonces los indices son de aquellas muetras que
+                                                                                                                            # Deben interpolarse.
+                                        r=int(k*np.abs(Valor_esc))
+                                        x_nesc[k]=x_n[r]
+
+                                    else:                                                                                   # Define el metodo de interpolacion
+
+                                        if (Inter_P==1):
+                                            x_nesc[k]=0
+                                        elif (Inter_P==2):
+                                            x_nesc[k]=x_nesc[k-1]
+                                        elif (Inter_P==3):
+                                            x_nesc[k]=interpolacion_lineal(n_esc[r*Z], x_n[r], n_esc[(r+1)*Z], x_n[r+1], n_esc[k]) # Formula de interpolación
+
+                            #--------------------------------------------Desplazamiento-----------------------------------------------#
+
+                                if (not (Valor_des/(np.abs(Valor_esc))).is_integer()) and (Lock==True):          #Operacion.is_integer(): Verifica si el resultado de la Operacion es un número entero
+                                    return print("¡Error no es posible desplazar en un valor no entero!")
+
+                                N_0=int(Valor_des/np.abs(Valor_esc))
+
+                                n_des=n_esc-(N_0)                                                                # Restar el valor del desplazamiento basta para obtener el vecto n desplazado
+                                                                                                                # Si N0>0 se presenta un adelanto. Si N0<0 se presenta un atraso.
+
+                            #----------------------------------------------Invercion---------------------------------------------------#
+
+                                if (Valor_esc<0):                                                                         # Si el señal debe reflejarse se invierte la dirrecio del vector n escalado.
+                                    n_desI=-n_des
+                                    Key_inv=True
+
+                                    n_des_retur=np.flip(n_desI)                                                            # np.flip invierte el orden de los datos de n_esc y x_nesc
+                                    x_nesc_retur=np.flip(x_nesc)
+
+                                else:
+
+                                    n_desI=n_des
+                                    Key_inv=False
+
+                                    n_des_retur=n_des
+                                    x_nesc_retur=x_nesc
+
+                            #----------------------------------------------Salida-----------------------------------------------------#
+
+                                if (Grafic==True):
+
+                                    Graf_EscDes(n,x_n,n_des,n_esc,n_desI,x_nesc,Valor_des,Valor_esc,Key_inv,Inter_P)   # En el caso de que se desse graficar el parametro Grafic=True [Por defecto] y la funcion graficara la trasformacion.
+
+                                else:
+
+                                    return  n_des_retur, x_nesc_retur                                                  # En el caso de que desee obtener los valores de la señal trasformada el parametro Grafic=False y la
+                                                                                                                    # Funcion entregara una tubla con los valores de n escala y x[n] escala.
+                            n_des,x_des = Trasform_EscDes(n_C,x_Cn,m1,no1,Inter_P=float(valor_interpolacion),Grafic=False)
                             n_esc,x_esc = Trasform_EscDes(n_C,x_Cn,m1,0,Inter_P=valor_interpolacion,Grafic=False)
 
                             #Original
@@ -1711,6 +1901,195 @@ def pagina3():
                         else:
                             valor_interpolacion = None
                         if valor_interpolacion != None:
+                            def Graf_EscDes(n,x_n,n_des,n_esc,n_desI,x_nesc,Valor_des,Valor_esc,inv,Inter_P):
+
+                                def limites():
+
+                                    x_min=np.min(x_n)                                                           # Ya que la funcion np.max y np.min no son buenas comparando numeros enteros. Se debe extraer primero
+                                    x_max=np.max(x_n)                                                           # Todos los minimos y maximos.
+                                    n_min=np.min(n)
+                                    n_max=np.max(n)
+                                    n_des_min=np.min(n_des)
+                                    n_des_max=np.max(n_des)
+                                    n_esc_min=np.min(n_esc)
+                                    n_esc_max=np.max(n_esc)
+                                    n_desI_min=np.min(n_desI)
+                                    n_desI_max=np.max(n_desI)
+
+                                    y_min=min(n_min,n_des_min,n_esc_min,n_desI_min)                             # Todos limites derechos y izquierdos se comparan y se conservan los de mayor magnitud.
+                                    y_max=max(n_max,n_des_max,n_esc_max,n_desI_max)
+
+                                    plt.axis([y_min-2,y_max+2,x_min-2,x_max+2])
+
+
+                                if (Valor_des<0):
+                                    sig_lable='-'
+                                else:
+                                    sig_lable='+'
+
+                                if (np.abs(Valor_esc)>1):
+
+                                    tipo_lable=' '
+                                else:
+
+                                    if (Inter_P==1):
+                                            tipo_lable='(Interpolacion Cero)'
+                                    elif (Inter_P==2):
+                                            tipo_lable='(Interpolacion Escalón)'
+                                    elif (Inter_P==3):
+                                            tipo_lable='(Interpolacion Lineal)'
+
+                                #-----------------------------------Dimenciones de la Graficas----------------------------------------
+
+                                if (inv==False):
+                                    plt.figure(figsize=(15,5))
+                                else:
+                                    plt.figure(figsize=(15,12))
+
+                                if (inv==False):
+                                    plt.subplot(1,3,1)
+                                else:
+                                    plt.subplot(2,2,1)
+
+                                #---------------------------------------Grafica señal Original-------------------------------------
+
+                                plt.stem(n,x_n,basefmt=" ", label=f'$x[n]$')
+                                plt.title("Señal Discreta")
+                                plt.xlabel("Tiempo (s)")
+                                plt.ylabel("Amplitud")
+                                limites()
+                                plt.grid(True)
+                                plt.legend()
+
+                                #---------------------------------------Grafica señal Escalada-------------------------------------
+
+                                if (inv==False):
+                                    plt.subplot(1,3,2)
+                                else:
+                                    plt.subplot(2,2,2)
+
+                                plt.stem(n_esc,x_nesc,linefmt='r', basefmt=" ", label=f'$x[{np.abs(Valor_esc)}n]$')
+                                plt.title(f'Señal Discreta Escalada {tipo_lable}')
+                                plt.xlabel("Tiempo (s)")
+                                plt.ylabel("Amplitud")
+                                limites()
+                                plt.grid(True)
+                                plt.legend()
+
+                                #---------------------------------------Grafica señal Desplazada-------------------------------------
+
+                                if (inv==False):
+                                    plt.subplot(1,3,3)
+                                else:
+                                    plt.subplot(2,2,3)
+
+                                plt.stem(n_des,x_nesc,linefmt='g', basefmt=" ", label=f'$x[{np.abs(Valor_esc)}n{sig_lable}{np.abs(Valor_des)}]$')
+                                plt.title("Señal Discreta Desplazada")
+                                plt.xlabel("Tiempo (s)")
+                                plt.ylabel("Amplitud")
+                                limites()
+                                plt.grid(True)
+                                plt.legend()
+
+                            #---------------------------------------Grafica señal Reflejada-------------------------------------
+
+                                if (inv==True):
+
+                                    plt.subplot(2,2,4)
+                                    plt.stem(n_desI,x_nesc,linefmt='g', basefmt=" ", label=f'$x[{Valor_esc}n{sig_lable}{np.abs(Valor_des)}]$')
+                                    plt.title("Señal Discreta Reflejada")
+                                    plt.xlabel("Tiempo (s)")
+                                    plt.ylabel("Amplitud")
+                                    limites()
+                                    plt.grid(True)
+                                    plt.legend()
+
+                            #---------------------------------------------------------------Funcion encargada de la interpolacion Lineal-------------------------------
+
+                            def interpolacion_lineal(n1, x_n1, n2, x_n2, n):
+
+                                # Fórmula de interpolación lineal
+                                sol = x_n1 + (x_n2 - x_n1) * (n - n1) / (n2 - n1)
+                                return sol
+
+                            #---------------------------------------------------------------Funcion de Traformacion Metodo 1---------------------------------------------------
+
+                            def Trasform_EscDes(n,x_n,Valor_esc,Valor_des,Inter_P=1,Grafic=True,Lock=True):
+
+                            #----------------------------------------------Escalado---------------------------------------------------#
+
+                                if (np.abs(Valor_esc)>1):
+
+                                    n_esc = np.array([x // (np.abs(Valor_esc)) for x in n if x % np.abs(Valor_esc) == 0])          # Se crea el vector de n escalado. Se aplica la division entera del valor abs de a
+                                                                                                                                    # factor de escalado para cada dato de el vector de n, pero solo se guardan
+                                                                                                                                # los resultados enteros.
+
+                                    x_nesc = np.array([x_n[np.digitize(np.abs(Valor_esc)*i, n) - 1] for i in n_esc])          # Se arma el vector de amplitudes diezmado. Primero se toma cada valor de n escalado y se regresa
+                                                                                                                        # a su valor original. Luego se busca el indice de ese valor en el vector n sin escalar
+                                                                                                                        # Para esto se usa la funcion digitize (). Como las dimeciones de n y X[n] son las misma,
+                                                                                                                        # basta con este indice para extraer el valor de x[n] correspondiente.
+                                else:
+
+                                    Z=int(1/np.abs(Valor_esc))                                                               # El factor que se multiplica cada valor de tiempo es 1/M.
+                                    n_esc=np.arange(np.min(n)*Z,np.max(n)*Z+1,dtype=int)                                     # Se escala el vector n.
+                                    L_n=len(n)                                                                               # Longitud del vector n.
+                                    L_nesc=len(n_esc)                                                                        # Longitud del vector n escalado.
+
+                                    x_nesc = np.arange(1,L_nesc+1,dtype=float)                                               # Se crea un vector para las amplitudes de la señal escalada.
+
+                                for k in range(L_nesc):                                                                  # Se analiza los indeces del vector n escalado.
+
+                                    if (k / Z).is_integer():                                                               # Si la señal se expandio un factor de Z entonces los indices multiplos de Z seran los
+                                                                                                                            # indices de las Muestras expandidas. Sino entonces los indices son de aquellas muetras que
+                                                                                                                            # Deben interpolarse.
+                                        r=int(k*np.abs(Valor_esc))
+                                        x_nesc[k]=x_n[r]
+
+                                    else:                                                                                   # Define el metodo de interpolacion
+
+                                        if (Inter_P==1):
+                                            x_nesc[k]=0
+                                        elif (Inter_P==2):
+                                            x_nesc[k]=x_nesc[k-1]
+                                        elif (Inter_P==3):
+                                            x_nesc[k]=interpolacion_lineal(n_esc[r*Z], x_n[r], n_esc[(r+1)*Z], x_n[r+1], n_esc[k]) # Formula de interpolación
+
+                            #--------------------------------------------Desplazamiento-----------------------------------------------#
+
+                                if (not (Valor_des/(np.abs(Valor_esc))).is_integer()) and (Lock==True):          #Operacion.is_integer(): Verifica si el resultado de la Operacion es un número entero
+                                    return print("¡Error no es posible desplazar en un valor no entero!")
+
+                                N_0=int(Valor_des/np.abs(Valor_esc))
+
+                                n_des=n_esc-(N_0)                                                                # Restar el valor del desplazamiento basta para obtener el vecto n desplazado
+                                                                                                                # Si N0>0 se presenta un adelanto. Si N0<0 se presenta un atraso.
+
+                            #----------------------------------------------Invercion---------------------------------------------------#
+
+                                if (Valor_esc<0):                                                                         # Si el señal debe reflejarse se invierte la dirrecio del vector n escalado.
+                                    n_desI=-n_des
+                                    Key_inv=True
+
+                                    n_des_retur=np.flip(n_desI)                                                            # np.flip invierte el orden de los datos de n_esc y x_nesc
+                                    x_nesc_retur=np.flip(x_nesc)
+
+                                else:
+
+                                    n_desI=n_des
+                                    Key_inv=False
+
+                                    n_des_retur=n_des
+                                    x_nesc_retur=x_nesc
+
+                            #----------------------------------------------Salida-----------------------------------------------------#
+
+                                if (Grafic==True):
+
+                                    Graf_EscDes(n,x_n,n_des,n_esc,n_desI,x_nesc,Valor_des,Valor_esc,Key_inv,Inter_P)   # En el caso de que se desse graficar el parametro Grafic=True [Por defecto] y la funcion graficara la trasformacion.
+
+                                else:
+
+                                    return  n_des_retur, x_nesc_retur
                             n_des,x_des = Trasform_EscDes(n_D,x_Dn,m1,no1,Inter_P=valor_interpolacion,Grafic=False)
 
                             n_esc,x_esc = Trasform_EscDes(n_D,x_Dn,m1,0,Inter_P=valor_interpolacion,Grafic=False)
