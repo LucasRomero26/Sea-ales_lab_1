@@ -152,7 +152,7 @@ def Trasform_EscDes(n,x_n,Valor_esc,Valor_des,Inter_P=1,Grafic=True,Lock=True):
 
      for k in range(L_nesc):                                                                  # Se analiza los indeces del vector n escalado.
 
-       if k % Z ==0:                                                                          # Si la señal se expandio un factor de Z entonces los indices multiplos de Z seran los
+       if (k / Z).is_integer():                                                               # Si la señal se expandio un factor de Z entonces los indices multiplos de Z seran los
                                                                                               # indices de las Muestras expandidas. Sino entonces los indices son de aquellas muetras que
                                                                                               # Deben interpolarse.
          r=int(k*np.abs(Valor_esc))
@@ -169,13 +169,13 @@ def Trasform_EscDes(n,x_n,Valor_esc,Valor_des,Inter_P=1,Grafic=True,Lock=True):
 
  #--------------------------------------------Desplazamiento-----------------------------------------------#
 
-    if (Valor_des % np.abs(Valor_esc) != 0 ) and (Lock==True):
+    if (not (Valor_des/(np.abs(Valor_esc))).is_integer()) and (Lock==True):          #Operacion.is_integer(): Verifica si el resultado de la Operacion es un número entero
       return print("¡Error no es posible desplazar en un valor no entero!")
 
     N_0=int(Valor_des/np.abs(Valor_esc))
 
     n_des=n_esc-(N_0)                                                                # Restar el valor del desplazamiento basta para obtener el vecto n desplazado
-                                                                                    # Si N0>0 se presenta un adelanto. Si N0<0 se presenta un atraso.
+                                                                                     # Si N0>0 se presenta un adelanto. Si N0<0 se presenta un atraso.
 
  #----------------------------------------------Invercion---------------------------------------------------#
 
